@@ -41,9 +41,9 @@ public final class VkMusicSync extends ClientBotsExtension {
         final File directory = new File(MUSIC_DIR);
         if (!directory.exists())
             logger.debug("Создаем директорию для хранения музыки: {}", directory.mkdirs());
-        final List<Audio> list = new ArrayList<>(Arrays.asList(audios.list(null, null, null, null, null, null)));
+        final List<Audio> list = new ArrayList<>(Arrays.asList(audios.list(owner.id, null, null, null, null, null)));
         List<String> existFiles = getFileList();
-        logger.debug(" У текщего пользователя {} аудиозаписей," +
+        logger.debug(" У текущего пользователя {} аудиозаписей," +
                 " на данном устройстве хранится {} аудиозаписей.", list.size(), existFiles.size());
 
         for (Audio audio : list) {  // грузим то, чего у нас нет
@@ -52,7 +52,7 @@ public final class VkMusicSync extends ClientBotsExtension {
                 download(audio);
             }
         }
-        logger.debug("Посик \"лишних\" файлов...");
+        logger.debug("Поиск \"лишних\" файлов...");
         List<String> deleted = deleteExcess(list, getFileList()); // удаляем лишнее
         logger.debug("удалено {} файлов. Синхронизация завершена!", deleted.size());
 
@@ -69,7 +69,7 @@ public final class VkMusicSync extends ClientBotsExtension {
                 Response response;
                 response = client.newCall(request).execute();
                 try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
-                    sink.writeAll(response.body().source());
+                    sink.writeAll(response.body().source()); //из потока в файл
                 } catch (FileNotFoundException e) {
                     logger.error("ошибка записи файла {}", file.getName());
                 }
@@ -111,7 +111,7 @@ public final class VkMusicSync extends ClientBotsExtension {
                 }
             }
         } catch (IOException e) {
-            logger.error("Ошибка  при получчении списка файлов. Существует ли директория {}", MUSIC_DIR);
+            logger.error("Ошибка  при получении списка файлов. Существует ли директория {}", MUSIC_DIR);
         }
 
         return files;
